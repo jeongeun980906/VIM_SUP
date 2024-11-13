@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Versatile Interactive Motion Language Model">
+  <meta name="keywords" content="motion language model">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta property="og:title" content="Versatile Interactive Motion Language Model"/>
+  <meta property="og:description" content="VIM"/>
+  <title>VIM</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/128/12383/12383863.png">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js"></script>
+  <script type="module" src="https://gradio.s3-us-west-2.amazonaws.com/4.16.0/gradio.js"></script>
+</head>
+
+<style>
+  .expandable-card .card-text-container {
+    max-height: 200px;
+    overflow-y: hidden;
+    position: relative;
+  }
+
+  .expandable-card.expanded .card-text-container {
+    max-height: none;
+  }
+
+  .expand-btn {
+    position: relative;
+    display: none;
+    background-color: rgba(255, 255, 255, 0.8);
+    /* margin-top: -20px; */
+    /* justify-content: center; */
+    color: #510c75;
+    border-color: transparent;
+  }
+
+  .expand-btn:hover {
+    background-color: rgba(200, 200, 200, 0.8);
+    text-decoration: none;
+    border-color: transparent;
+    color: #510c75;
+  }
+
+  .expand-btn:focus {
+    outline: none;
+    text-decoration: none;
+  }
+
+  .expandable-card:not(.expanded) .card-text-container:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 90px;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 1));
+  }
+
+  .expandable-card:not(.expanded) .expand-btn {
+    margin-top: -40px;
+  }
+
+  .card-body {
+    padding-bottom: 5px;
+  }
+
+  .vertical-flex-layout {
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .figure-img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .adjustable-font-size {
+    font-size: calc(0.5rem + 2vw);
+  }
+
+  .chat-history {
+    flex-grow: 1;
+    overflow-y: auto;
+    /* overflow-x: hidden; */
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+
+  #gradio pre {
+    background-color: transparent;
+  }
+  /* Styling for the buttons */
+  .slider-buttons .button {
+    background-color: #5AC8C8; /* Teal background */
+    color: white; /* White icon color */
+    border: none; /* Remove border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px; /* Button padding */
+    font-size: 18px; /* Icon size */
+    transition: background-color 0.3s ease; /* Smooth hover transition */
+  }
+
+  .slider-buttons .button:hover {
+    background-color: #48a1a1; /* Darker teal on hover */
+    cursor: pointer; /* Pointer cursor on hover */
+  }
+
+  .slider-buttons .button i {
+    color: white; /* Ensure icon color is white */
+    font-size: 18px; /* Icon size */
+  }
+
+  .grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Defines a 2x2 grid */
+  grid-gap: 10px; /* Adds space between the video containers */
+  max-width: 600px; /* Limits the grid width */
+  margin: 0 auto; /* Centers the grid on the page */
+  text-align: center; /* Centers inline content within each grid item */
+}
+
+  /* Container for the main video */
+  .video-container-2 {
+    position: relative;
+    width: 100%; /* Ensure full width */
+    max-width: 600px; /* Optional: define max width */
+    margin: 0 auto; /* Center the video container */
+    margin-bottom: 10px; /* Add extra margin to prevent collapse */
+    padding: 10px;
+    overflow: hidden; /* Prevent content overflow */
+    box-sizing: border-box; /* Ensure padding is calculated correctly */
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    align-items: center; /* Center items horizontally */
+  }
+
+.main-video {
+  width: 70%;
+  height: auto;
+  object-fit: contain; 
+}
+
+.small-video {
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  width: 150px;
+  height: auto;
+}
+
+.subtitle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 16px;
+  color: black;
+}
+
+
+    /* Style for custom play/pause button */
+    .controls2 {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .controls2 button {
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .video-standalone {
+      margin-bottom: 1px;  /* Ensure enough space between the video and the next section */
+      clear: both;  /* Ensure it clears any floating or preceding content */
+    }
+
+
+</style>
+
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">Supplementary Material for CVPR submission 18323</h1>
+            <h3 class="title is-3 publication-title">Versatile Motion-Language Models for Multi-Turn Interactive Agents</h3>
+            <!-- <h5 class="subtitle is-5 publication-awards">NeurIPS 2023 (Oral)</h5> -->
+            <!-- <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                <a href="https://jeongeun-park-page.github.io" style="color:#ae2f2f;font-weight:normal;">Jeongeun Park <sup>1*</sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://sites.google.com/view/sungjoon-choi/home" style="color:#ae2f2f;font-weight:normal;">Sungjoon Choi<sup>1<span>&#8224;</span></sup></a>,
+              </span>
+              <span class="author-block">
+                <a href="https://sangdooyun.github.io/" style="color:#59f359;font-weight:normal;">Sangdoo Yun<sup>2<span>&#8224;</span></sup></a>,
+              </span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block"><b style="color:#ae2f2f; font-weight:normal">&#x25B6 </b> <sup>1</sup> Korea University</b></span>
+              <span class="author-block"><b style="color:#59f359; font-weight:normal">&#x25B6 </b> <sup>2</sup> NAVER AI Lab</span>
+                
+            </div>
+
+            <div class="is-size-6 publication-authors">
+              <span class="author-block"><sup><span>*</span></sup>This research was conducted as part of an internship at NAVER AI Lab, 2024</span>, <br>
+              <span class="author-block"><sup><span>&#8224;</span></sup>Corresponding authors</span>
+            </div>
+
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/2410.05628" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code (Comming Soon)</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="far fa-images"></i>
+                    </span>
+                    <span>Demo (Comming Soon)</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-database"></i>
+                    </span>
+                    <span>Dataset (Comming Soon)</span>
+                  </a>
+                </span> -->
+                <!-- <span class="link-block">
+                  <a href="https://github.com/haotian-liu/LLaVA/blob/main/docs/MODEL_ZOO.md" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-share-square"></i>
+                    </span>
+                    <span>Model</span>
+                  </a>
+                </span> -->
+
+
+                
+
+                <!-- <span class="link-block">
+                <a href="#"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                  </a>
+              </span> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-bottom: 10px;">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-six-fifths">
+        <h2 class="title is-3">Demo Video</h2>
+      </div>
+    </div>
+    <div class="container is-max-desktop" style="max-width: 1000px; margin: 0 auto;">
+      <div class="hero-body" style="padding-bottom: 10px;">
+        <figure class="video-standalone" style="margin-bottom: 1px;">
+          <video controls autoplay style="width: 100%; height: auto; max-height: 500px; display: block">
+            <source src="./assets/intro_vim.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- <section class="section"  style="background-color:#efeff081">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Recent advancements in large language models (LLMs) have greatly enhanced their ability to generate natural and contextually relevant text, making AI interactions more human-like. However, generating and understanding interactive human-like motion, where two individuals engage in coordinated movements, remains a challenge due to the complexity of modeling these coordinated interactions. Furthermore, a versatile model is required to handle diverse interactive scenarios, such as chat systems that follow user instructions or adapt to their assigned role while adjusting interaction dynamics. To tackle this problem, we introduce VIM, short for the Versatile Interactive Motion language model, which integrates both language and motion modalities to effectively understand, generate, and control interactive motions in multi-turn conversational contexts. To address the scarcity of multi-turn interactive motion data, we introduce a synthetic dataset called INTER-MT<sup>2</sup>; where we utilize pre-trained models to create diverse instructional datasets with interactive motion. Our approach first trains a motion tokenizer that encodes interactive motions into residual discrete tokens. In the pre-training stage, the model learns to align motion and text representations with these discrete tokens. During the instruction fine-tuning stage, VIM adapts to multi-turn conversations using INTER-MT<sup>2</sup>. We evaluate the versatility of our method across motion-related tasks—motion-to-text, text-to-motion, reaction generation, motion editing, and reasoning about motion sequences. The results highlight VIM’s versatility and effectiveness in handling complex interactive motion synthesis.
+           </p>
+  
+          </div>
+        </div>
+      </div>
+        
+    </div>
+  </section> -->
+  
+<section class="section">
+  <!-- Results. -->
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-six-fifths">
+      <h2 class="title is-3">Data samples from Inter-MT <sup>2</sup> </h2>
+    </div>
+  </div>
+  <!-- </div> -->
+  <!--/ Results. -->    
+<div class="container is-max-desktop">
+
+  <div class="columns is-centered">
+    <!-- <h2 class="title is-4"> Data samples from Inter-MT <sup>2</sup></h2> -->
+    <div class="column is-full-width">
+      <div class="content has-text-justified">
+        <div class="container mt-5">
+          <!-- <h2 class="text-center mb-5">Who's GPT-4's favorite? Battles between State-of-the-Art Chatbots</h2> -->
+          <!-- Selection -->
+          <div class="form-row" style="justify-content: flex-end;">
+            <div class="form-group col-md-1">
+              <div class="col-md-2" style="width: 100%"><label>&nbsp;</label></div>
+              <div class="btn-group" role="group" aria-label="Left and Right Controller"
+                style="width: 100%;align-items: flex-end;justify-content: center;flex-direction: row;display: flex;">
+                <button type="button" class="form-control btn btn-primary" id="prev-question"><i
+                    class="material-icons">keyboard_arrow_left</i></button>
+                <button type="button" class="form-control btn btn-primary" id="next-question"><i
+                    class="material-icons">keyboard_arrow_right</i></button>
+      
+              </div>
+            </div>
+          </div>
+      
+          <!-- Question Card -->
+          <div style="display: flex; justify-content: center; align-items: center;">
+            <div class="card mb-4" style="width: 100%; display: flex; align-items: center;">
+              <div class="card-body" id="selected-question" style="display: flex; height: 80vh;">
+                <div class="chat-history">
+                  <!-- Add your chat messages here -->
+                </div>
+      
+              </div>
+            </div>
+          </div>
+      
+        </div>
+      </div>    
+      <!-- maybe something here -->
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- Motion Editing Task Section -->
+<section class="section">
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-six-fifths">
+      <h2 class="title is-3">Examples on Motion Editing Task</h2>
+    </div>
+  </div>
+
+  <!-- Chatbox Container for Motion Editing Task -->
+  <div id="chat-container-editing" style="position: relative; width: 90%; margin: 0 auto;">
+    
+    <!-- Chat Box Pair 1: Two Chatboxes in one row -->
+    <div class="chat-box-pair active">
+      <!-- First Chat Box (Left) -->
+      <div class="column is-half">
+        <div class="box" style="border: 1px dashed gray">
+          <article class="media" style="border: 1px solid #ccc; padding: 10px; border-radius: 8px">
+            <figure class="media-left">
+              <span class="icon is-large">
+                <i class="fas fa-user fa-2x"></i>
+              </span>
+            </figure>
+            <div class="media-content">
+              <div class="content">
+                <strong>User</strong>
+                <p>
+                  Two friends meet after a long time and greet each other like  <span style="color:#b15b96;">[source motion]</span>. What if one of the friends becomes overly touched upon meeting the other friend?
+                </p>
+              </div>
+              <figure class="video-container">
+                <video controls style="max-width: 80%; max-height: 300px;">
+                  <source src="./assets/samples/edit/17/temp_crop.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </figure>
+            </div>
+          </article>
+
+          <article class="media" style="border: 1px solid #007bff; padding: 10px; border-radius: 8px">
+            <figure class="media-left">
+              <span class="icon is-large">
+                <i class="fas fa-robot fa-2x"></i>
+              </span>
+            </figure>
+            <div class="media-content">
+              <div class="content">
+                <strong>VIM</strong>
+              </div>
+              <figure class="video-container">
+                <video controls style="max-width: 80%; max-height: 300px;">
+                  <source src="./assets/samples/edit/17/res_crop.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <!-- Second Chat Box (Right) -->
+      <div class="column is-half">
+        <div class="box" style="border: 1px dashed gray">
+          <article class="media" style="border: 1px solid #ccc; padding: 10px; border-radius: 8px">
+            <figure class="media-left">
+              <span class="icon is-large">
+                <i class="fas fa-user fa-2x"></i>
+              </span>
+            </figure>
+            <div class="media-content">
+              <div class="content">
+                <strong>User</strong>
+                <p>
+                  Let's have a scene where two people are interacting, like the motion you see in <span style="color:#b15b96;">[source motion]</span>. 
+                  What if the person who is walking up is a bit more respectful?
+                </p>
+              </div>
+              <figure class="video-container">
+                <video controls style="max-width: 80%; max-height: 300px;">
+                  <source src="./assets/samples/edit/12/temp_crop.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </figure>
+            </div>
+          </article>
+
+          <article class="media" style="border: 1px solid #007bff; padding: 10px; border-radius: 8px">
+            <figure class="media-left">
+              <span class="icon is-large">
+                <i class="fas fa-robot fa-2x"></i>
+              </span>
+            </figure>
+            <div class="media-content">
+              <div class="content">
+                <strong>VIM</strong>
+              </div>
+              <figure class="video-container">
+                <video controls style="max-width: 80%; max-height: 300px;">
+                  <source src="./assets/samples/edit/12/res_crop.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      
+    </div>
+
+  <div class="chat-box-pair active">
+    <!-- Second Chat Box (Right) -->
+    <div class="column is-half">
+      <div class="box" style="border: 1px dashed gray">
+        <article class="media" style="border: 1px solid #ccc; padding: 10px; border-radius: 8px">
+          <figure class="media-left">
+            <span class="icon is-large">
+              <i class="fas fa-user fa-2x"></i>
+            </span>
+          </figure>
+          <div class="media-content">
+            <div class="content">
+              <strong>User</strong>
+              <p>
+                Two individuals are performing a self-defense technique, where one person strikes with the left hand, and the other intercepts the attack. It's similar to  <span style="color:#b15b96;">[source motion]</span>. 
+                The first person seems too aggressive. Can you make the second person counter in a more forceful and confident way?
+              </p>
+            </div>
+            <figure class="video-container">
+              <video controls style="max-width: 80%; max-height: 300px;">
+                <source src="./assets/samples/edit/6/temp_crop.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </figure>
+          </div>
+        </article>
+
+        <article class="media" style="border: 1px solid #007bff; padding: 10px; border-radius: 8px">
+          <figure class="media-left">
+            <span class="icon is-large">
+              <i class="fas fa-robot fa-2x"></i>
+            </span>
+          </figure>
+          <div class="media-content">
+            <div class="content">
+              <strong>VIM</strong>
+            </div>
+            <figure class="video-container">
+              <video controls style="max-width: 80%; max-height: 300px;">
+                <source src="./assets/samples/edit/6/res_crop.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </figure>
+          </div>
+        </article>
+      </div>
+    </div>
+    
+
+      <!-- Second Chat Box (Right) -->
+      <div class="column is-half">
+        <div class="box" style="border: 1px dashed gray">
+          <article class="media" style="border: 1px solid #ccc; padding: 10px; border-radius: 8px">
+            <figure class="media-left">
+              <span class="icon is-large">
+                <i class="fas fa-user fa-2x"></i>
+              </span>
+            </figure>
+            <div class="media-content">
+              <div class="content">
+                <strong>User</strong>
+                <p>
+                  Two friends are meeting up like in <span style="color:#b15b96;">[source motion]</span>. The first person seems way too aggressive. Can you make this person more gentle?
+                </p>
+              </div>
+              <figure class="video-container">
+                <video controls style="max-width: 80%; max-height: 240px;">
+                  <source src="./assets/samples/edit/2/temp_crop.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </figure>
+            </div>
+          </article>
+
+          <article class="media" style="border: 1px solid #007bff; padding: 10px; border-radius: 8px">
+            <figure class="media-left">
+              <span class="icon is-large">
+                <i class="fas fa-robot fa-2x"></i>
+              </span>
+            </figure>
+            <div class="media-content">
+              <div class="content">
+                <strong>VIM</strong>
+              </div>
+              <figure class="video-container">
+                <video controls style="max-width: 80%; max-height: 240px;">
+                  <source src="./assets/samples/edit/2/res_crop.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </div>
+
+
+  </div>
+
+    <!-- Chat Box Pair 2: Two Chatboxes in one row -->
+    <div class="chat-box-pair" style="display: none;">
+      <!-- First Chat Box (Left) -->
+      <div class="column is-half">
+        <div class="box" style="border: 1px dashed gray">
+          <article class="media" style="border: 1px solid #ccc; padding: 10px; border-radius: 8px">
+            <figure class="media-left">
+              <span class="icon is-large">
+                <i class="fas fa-user fa-2x"></i>
+              </span>
+            </figure>
+            <div class="media-content">
+              <div class="content">
+                <strong>User</strong>
+                <p>
+                  Two people are standing side-by-side, similar to <span style="color:#b15b96;">[source motion]</span>. Can you make this interaction even more playful?
+                </p>
+              </div>
+              <figure class="video-container">
+                <video controls style="max-width: 80%; max-height: 240px;">
+                  <source src="./assets/samples/edit/3/temp_crop.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </figure>
+            </div>
+          </article>
+
+          <article class="media" style="border: 1px solid #007bff; padding: 10px; border-radius: 8px">
+            <figure class="media-left">
+              <span class="icon is-large">
+                <i class="fas fa-robot fa-2x"></i>
+              </span>
+            </figure>
+            <div class="media-content">
+              <div class="content">
+                <strong>VIM</strong>
+              </div>
+              <figure class="video-container">
+                <video controls style="max-width: 80%; max-height: 240px;">
+                  <source src="./assets/samples/edit/3/res_crop.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </div>
+
+
+    <div class="column is-half">
+      <div class="box" style="border: 1px dashed gray">
+        <article class="media" style="border: 1px solid #ccc; padding: 10px; border-radius: 8px">
+          <figure class="media-left">
+            <span class="icon is-large">
+              <i class="fas fa-user fa-2x"></i>
+            </span>
+          </figure>
+          <div class="media-content">
+            <div class="content">
+              <strong>User</strong>
+              <p>
+                I'm looking at a scene where one person lies flat on the ground, shielding their eyes from the sun, while another person kneels beside them, trying to pull them up. The person on the ground rolls away but eventually gets up reluctantly, like  <span style="color:#b15b96;">[source motion]</span>. 
+                Can you make the person who's initially resisting look more cooperative and not so reluctant?
+            </div>
+            <figure class="video-container">
+              <video controls style="max-width: 80%; max-height: 300px;">
+                <source src="./assets/samples/edit/11/temp_crop.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </figure>
+          </div>
+        </article>
+
+        <article class="media" style="border: 1px solid #007bff; padding: 10px; border-radius: 8px">
+          <figure class="media-left">
+            <span class="icon is-large">
+              <i class="fas fa-robot fa-2x"></i>
+            </span>
+          </figure>
+          <div class="media-content">
+            <div class="content">
+              <strong>VIM</strong>
+            </div>
+            <figure class="video-container">
+              <video controls style="max-width: 80%; max-height: 300px;">
+                <source src="./assets/samples/edit/11/res_crop.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </figure>
+          </div>
+        </article>
+      </div>
+    </div>
+    </div>
+
+    <!-- Chat Box Pair 3: Another Two Chatboxes in one row -->
+    <div class="chat-box-pair" style="display: none;">
+      <!-- Third Chat Box -->
+      <div class="column is-half">
+      <div class="box" style="border: 1px dashed gray">
+        <article class="media" style="border: 1px solid #ccc; padding: 10px; border-radius: 8px">
+          <figure class="media-left">
+            <span class="icon is-large">
+              <i class="fas fa-user fa-2x"></i>
+            </span>
+          </figure>
+          <div class="media-content">
+            <div class="content">
+              <strong>User</strong>
+              <p>
+                Two people are in a hallway, and one is trying to get past the other like <span style="color:#b15b96;">[source motion]</span>. 
+                It looks too aggressive, can you adjust one person's behavior to be more polite?
+              </p>
+            </div>
+            <figure class="video-container">
+              <video controls style="max-width: 80%; max-height: 240px;">
+                <source src="./assets/samples/edit/4/temp_crop.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </figure>
+          </div>
+        </article>
+
+        <article class="media" style="border: 1px solid #007bff; padding: 10px; border-radius: 8px">
+          <figure class="media-left">
+            <span class="icon is-large">
+              <i class="fas fa-robot fa-2x"></i>
+            </span>
+          </figure>
+          <div class="media-content">
+            <div class="content">
+              <strong>Assistant</strong>
+            </div>
+            <figure class="video-container">
+              <video controls style="max-width: 80%; max-height: 240px;">
+                <source src="./assets/samples/edit/4/res_crop.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </figure>
+          </div>
+        </article>
+      </div>
+    </div>
+
+      <!-- Fourth Chat Box -->
+      <div class="column is-half">
+        <div class="box" style="border: 1px dashed gray">
+          <!-- Your fourth chat content -->
+          <article class="media" style="border: 1px solid #ccc; padding: 10px; border-radius: 8px">
+            <figure class="media-left">
+              <span class="icon is-large">
+                <i class="fas fa-user fa-2x"></i>
+              </span>
+            </figure>
+            <div class="media-content">
+              <div class="content">
+                <strong>User</strong>
+                <p>
+                  Two people are practicing taekwondo kicks, like <span style="color:#b15b96;">[source motion]</span>. 
+                  What if of one of them becomes more cautious and observant due to an injury?
+                </p>
+              </div>
+              <figure class="video-container">
+                <video controls style="max-width: 80%; max-height: 240px;">
+                  <source src="./assets/samples/edit/1/temp_crop.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </figure>
+            </div>
+          </article>
+  
+          <article class="media" style="border: 1px solid #007bff; padding: 10px; border-radius: 8px">
+            <figure class="media-left">
+              <span class="icon is-large">
+                <i class="fas fa-robot fa-2x"></i>
+              </span>
+            </figure>
+            <div class="media-content">
+              <div class="content">
+                <strong>VIM</strong>
+              </div>
+              <figure class="video-container">
+                <video controls style="max-width: 80%; max-height: 240px;">
+                  <source src="./assets/samples/edit/1/res_crop.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </figure>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+
+   <!-- Navigation Buttons for Motion Editing Task -->
+   <div class="slider-buttons" style="position: absolute; top: -40px; right: 0; display: flex; gap: 10px;"">
+    <button id="prevBtnEditing" class="button"><i class="fas fa-arrow-left"></i></button>
+    <button id="nextBtnEditing" class="button"><i class="fas fa-arrow-right"></i></button>
+  </div>
+
+</div>
+</section>
+
+
+
+<section class="section">
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-six-fifths">
+      <h2 class="title is-3">Examples on Motion Reasoning Task</h2>
+    </div>
+  </div>
+
+  <!-- Chat Box Container with 70% Width -->
+  <div class="columns is-centered" style="position: relative;">
+    <div class="column" style="max-width: 70%; position: relative;">
+      <div class="box" id="chat-box" style="border: 1px dashed gray; padding: 20px; position: relative;">
+        <!-- Chat content will be dynamically inserted here -->
+      </div>
+
+      <!-- Navigation Buttons aligned to top-right of the chatbox, moved higher -->
+      <div style="position: absolute; top: -40px; right: 0; display: flex; gap: 10px;"> <!-- Adjusted top value to -40px -->
+        <button class="button is-primary" id="prev-button"><i class="fas fa-arrow-left"></i></button>
+        <button class="button is-primary" id="next-button"><i class="fas fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="section">
+
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-six-fifths">
+      <h2 class="title is-3"> Examples on Tradiaional Motion Related Tasks</h2>
+    </div>
+  </div>
+
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-six-fifths">
+         <h2 class="title is-4">Motion-to-Text</a></h2>
+      </div>
+    </div>   
+
+    <!-- Generated Video Section with Background -->
+  <div class="columns is-centered has-text-centered">
+
+
+    <!-- First video box -->
+    <div class="column" style="flex: 1; padding: 10px;">
+      <div style="border: 2px solid #ccc; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+        <video controls style="width: 100%; height: 300px; object-fit: contain;">
+          <source src="./assets/samples/m2t/1/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <div style="border: 2px solid #007bff; border-radius: 8px; background-color:#e3f2fd; height: 60px; margin-bottom: 10px; text-align: center;">
+        <p>One person pats the other on the back, and the other person turns to look.</p>
+      </div>
+      <div style="border: 2px solid #ccc; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+        <video controls style="width: 100%; height: 300px; object-fit: contain;">
+          <source src="./assets/samples/m2t/6/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <div style="border: 2px solid #007bff; border-radius: 8px; background-color:#e3f2fd; height: 60px; margin-bottom: 10px; text-align: center; ">
+        <p>The first person holds onto the second's right forearm, then stumbles and drags them down.</p>
+      </div>
+
+    </div>
+
+    <!-- Second video box -->
+    <div class="column" style="flex: 1; padding: 10px;">
+      <div style="border: 2px solid #ccc; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+        <video controls style="width: 100%; height: 300px; object-fit: contain;">
+          <source src="./assets/samples/m2t/4/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <div style="border: 2px solid #007bff; border-radius: 8px; background-color:#e3f2fd; height: 60px; margin-bottom: 10px; text-align: center;">
+        <p>One person approaches and massages the other's shoulders using both hands.</p>
+      </div>
+      <div style="border: 2px solid #ccc; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+        <video controls style="width: 100%; height: 300px; object-fit: contain;">
+          <source src="./assets/samples/m2t/8/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <div style="border: 2px solid #007bff; border-radius: 8px; background-color:#e3f2fd; height: 60px; margin-bottom: 10px; text-align: center;">
+        <p>One person steps forward and steps on the left foot of the other person.</p>
+      </div>
+    </div>
+
+    <!-- <div class="column is-half">
+      <div style="border: 2px solid #ccc; border-radius: 8px; padding: 10px;">
+        <video controls style="max-width: 100%; max-height: 360px; object-fit: contain;">
+          <source src="./assets/samples/m2t/1/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      
+      <div style="border: 1px solid #007bff; padding: 10px; border-radius: 8px; background-color: #e3f2fd; margin-top: 10px;">
+        <p>One person pats the other on the back, and the other person turns to look.</p>
+      </div>
+    </div>
+    <div class="column is-half">
+      <div style="border: 2px solid #ccc; border-radius: 8px; padding: 10px;">
+        <video controls style="max-width: 100%; max-height: 360px; object-fit: contain;">
+          <source src="./assets/samples/m2t/4/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <div style="border: 1px solid #007bff; padding: 10px; border-radius: 8px; background-color: #e3f2fd; margin-top: 10px;">
+        <p>One person approaches and massages the other's shoulders using both hands.</p>
+      </div>
+    </div>
+  </div>
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-half">
+      <div style="border: 2px solid #ccc; border-radius: 8px; padding: 10px;">
+        <video controls style="max-width: 100%; max-height: 360px; object-fit: contain;">
+          <source src="./assets/samples/m2t/6/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <div style="border: 1px solid #007bff; padding: 10px; border-radius: 8px; background-color: #e3f2fd; margin-top: 10px;">
+        <p>The first person holds onto the second's right forearm, then stumbles and drags them down.</p>
+      </div>
+    </div>
+    
+    <div class="column is-half">
+      <div style="border: 2px solid #ccc; border-radius: 8px; padding: 10px;">
+        <video controls style="max-width: 100%; max-height: 360px; object-fit: contain;">
+          <source src="./assets/samples/m2t/8/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <div style="border: 1px solid #007bff; padding: 10px; border-radius: 8px; background-color: #e3f2fd; margin-top: 10px;">
+        <p>One person steps forward and steps on the left foot of the other person.</p>
+      </div>
+    </div> -->
+  </div>
+
+
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-six-fifths">
+         <h2 class="title is-4">Text-to-Motion</a></h2>
+      </div>
+    </div>  
+  
+    <!-- Video grid layout -->
+  <!-- <div class="columns" style="display: flex; justify-content: space-between; align-items: flex-start;"> -->
+  <div class="columns is-centered has-text-centered">
+    <!-- First video box -->
+    <div class="column" style="flex: 1; padding: 10px;">
+      <div style="border: 2px solid #ccc; border-radius: 8px; background-color:#f0f0f0; height: 80px; margin-bottom: 10px; text-align: center;">
+        <p>Two people sit facing each other, taking turns to play rock-paper-scissors by waving their right arms to the right three times each.</p>
+      </div>
+      <div style="border: 2px solid #007bff; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+        <video controls style="width: 100%; height: 300px; object-fit: contain;">
+          <source src="./assets/samples/t2m/3/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <div style="border: 2px solid #ccc; border-radius: 8px; background-color:#f0f0f0; height: 80px; margin-bottom: 10px; text-align: center; ">
+        <p>Two people face each other and raise both hands in front of their heads. Then, they move forward and clap.</p>
+      </div>
+      <div style="border: 2px solid #007bff; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+        <video controls style="width: 100%; height: 300px; object-fit: contain;">
+          <source src="./assets/samples/t2m/4/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+
+    <!-- Second video box -->
+    <div class="column" style="flex: 1; padding: 10px;">
+      <div style="border: 2px solid #ccc; border-radius: 8px; background-color:#f0f0f0; height: 80px; margin-bottom: 10px; text-align: center;">
+        <p>The initial individual is seated on the chair. The subsequent individual approaches from the left of the first person, grasps his/her left arm with both hands, and assists him/her in rising.</p>
+      </div>
+      <div style="border: 2px solid #007bff; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+        <video controls style="width: 100%; height: 300px; object-fit: contain;">
+          <source src="./assets/samples/t2m/1/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <div style="border: 2px solid #ccc; border-radius: 8px; background-color:#f0f0f0; height: 80px; margin-bottom: 10px; text-align: center;">
+        <p>Two people walk towards each other, and when they meet, their arms collide.</p>
+      </div>
+      <div style="border: 2px solid #007bff; border-radius: 8px; padding: 10px; margin-bottom: 10px;">
+        <video controls style="width: 100%; height: 300px; object-fit: contain;">
+          <source src="./assets/samples/t2m/8/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-six-fifths">
+        <h2 class="title is-4">Reaction Generation</h2>
+      </div>
+    </div>
+  <div class="columns" style="display: flex; justify-content: flex-start; align-items: flex-start; width: 100%;">
+  <!-- Grid layout for 4 videos -->
+  <!-- <div class="grid-container" style="max-width: 800px; width: 100%; display: block; text-align: left;"> -->
+    <!-- First video container -->
+    <div class="column" style="flex: 1; padding: 10px;">
+      <!-- Second subtitle with larger font size and different position -->
+    <!-- <div class="subtitle2">Generated Motion <span style="color: #007bff;">(Blue)</div> -->
+    <div class="video-container-2" style="border: 2px solid #007bff; border-radius: 8px; padding: 10px;">
+      <video id="main-video-1" class="main-video">
+        <source src="./assets/samples/react/4/res_crop.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <video id="small-video-1" class="small-video">
+        <source src="./assets/samples/react/4/temp_fit.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="subtitle" style="z-index: 2; position: absolute; top: 10px; left: 10px; background: rgba(255, 255, 255, 0.7); padding: 5px;">Source Motion</div>
+      <div class="large-subtitle" style="z-index: 2; position: absolute; top: 1%; left: 50%; font-size: 20px; color: black; padding: 10px; border-radius: 5px;">
+        Generated Motion <span style="color: #007bff;">(Blue)
+      </div>
+      <div class="controls2">
+        <button id="playPauseBtn-1">Play</button>
+      </div>
+    </div>
+
+    <!-- Second video container -->
+    <div class="video-container-2" style="border: 2px solid #007bff; border-radius: 8px; padding: 10px;">
+      <video id="main-video-2" class="main-video">
+        <source src="./assets/samples/react/6/res_crop.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <video id="small-video-2" class="small-video">
+        <source src="./assets/samples/react/6/temp_fit.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="subtitle" style="z-index: 2; position: absolute; top: 10px; left: 10px; background: rgba(255, 255, 255, 0.7); padding: 5px;">Source Motion</div>
+      <div class="large-subtitle" style="z-index: 2; position: absolute; top: 1%; left: 50%; font-size: 20px; color: black; padding: 10px; border-radius: 5px;">
+        Generated Motion <span style="color: #007bff;">(Blue)
+      </div>
+      <div class="controls2">
+        <button id="playPauseBtn-2">Play</button>
+      </div>
+    </div>
+  </div>
+  <div class="column" style="flex: 1; padding: 10px;">
+    <div class="video-container-2" style="border: 2px solid #007bff; border-radius: 8px; padding: 10px;">
+      <video id="main-video-3" class="main-video">
+        <source src="./assets/samples/react/1/res_crop.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <video id="small-video-3" class="small-video">
+        <source src="./assets/samples/react/1/temp_fit.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="subtitle" style="z-index: 2; position: absolute; top: 10px; left: 10px; background: rgba(255, 255, 255, 0.7); padding: 5px;">Source Motion</div>
+      <div class="large-subtitle" style="z-index: 2; position: absolute; top: 1%; left: 50%; font-size: 20px; color: black; padding: 10px; border-radius: 5px;">
+        Generated Motion <span style="color: #007bff;">(Blue)
+      </div>
+      <div class="controls2">
+        <button id="playPauseBtn-3">Play</button>
+      </div>
+    </div>
+
+    <!-- Fourth video container -->
+    <div class="video-container-2" style="border: 2px solid #007bff; border-radius: 8px; padding: 10px;">
+      <video id="main-video-4" class="main-video">
+        <source src="./assets/samples/react/5/res_crop.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <video id="small-video-4" class="small-video">
+        <source src="./assets/samples/react/5/temp_fit.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <div class="subtitle" style="z-index: 2; position: absolute; top: 10px; left: 10px; background: rgba(255, 255, 255, 0.7); padding: 5px;">Source Motion</div>
+      <div class="large-subtitle" style="z-index: 2; position: absolute; top: 1%; left: 50%; font-size: 20px; color: black; padding: 10px; border-radius: 5px;">
+        Generated Motion <span style="color: #007bff;">(Blue)
+      </div>
+      <div class="controls2">
+        <button id="playPauseBtn-4">Play</button>
+      </div>
+    </div>
+  </div>
+</div>
+  <!-- </div> -->
+</section>
+  <!-- Reaction Generation Section -->
+<!-- <section class="section">
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-six-fifths">
+      <h2 class="title is-4">Reaction Generation</h2>
+    </div>
+  </div>
+
+  <div class="columns" style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div class="column is-half" style="padding: 10px;">
+      <h3 class="title is-5">Source Motion</h3>
+      <div style="border: 3px solid #ccc; border-radius: 8px; padding: 10px;">
+        <video controls style="width: 100%; height: 360px; object-fit: contain;">
+          <source src="./assets/samples/react/4/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+
+    <div class="column is-half" style="padding: 10px;">
+      <h3 class="title is-5">Generated Motion <span style="color: #007bff;">(Blue)</span></h3>
+      <div style="border: 3px solid #007bff; border-radius: 8px; padding: 10px;">
+        <video controls style="width: 100%; height: 360px; object-fit: contain;">
+          <source src="./assets/samples/react/4/res_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+  </div>
+  <div class="columns" style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div class="column is-half" style="padding: 10px;">
+      <div style="border: 3px solid #ccc; border-radius: 8px; padding: 10px;">
+        <video controls style="width: 100%; height: 360px; object-fit: contain;">
+          <source src="./assets/samples/react/6/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+
+    <div class="column is-half" style="padding: 10px;">
+      <div style="border: 3px solid #007bff; border-radius: 8px; padding: 10px;">
+        <video controls style="width: 100%; height: 360px; object-fit: contain;">
+          <source src="./assets/samples/react/6/res_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+  </div>
+
+  <div class="columns" style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div class="column is-one-quarter" style="padding: 10px;">
+      <h3 class="title is-5">Source Motion 3</h3>
+      <div style="border: 3px solid #ccc; border-radius: 8px; padding: 10px;">
+        <video controls style="width: 100%; height: 150px; object-fit: contain;">
+          <source src="./assets/samples/react/1/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+
+    <div class="column is-one-quarter" style="padding: 10px;">
+      <h3 class="title is-5">Generated Motion 3 <span style="color: #007bff;">(Blue)</span></h3>
+      <div style="border: 3px solid #007bff; border-radius: 8px; padding: 10px;">
+        <video controls style="width: 100%; height: 150px; object-fit: contain;">
+          <source src="./assets/samples/react/1/res_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+
+    <div class="column is-one-quarter" style="padding: 10px;">
+      <h3 class="title is-5">Source Motion 4</h3>
+      <div style="border: 3px solid #ccc; border-radius: 8px; padding: 10px;">
+        <video controls style="width: 100%; height: 150px; object-fit: contain;">
+          <source src="./assets/samples/react/5/temp_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+
+    <div class="column is-one-quarter" style="padding: 10px;">
+      <h3 class="title is-5">Generated Motion 4 <span style="color: #007bff;">(Blue)</span></h3>
+      <div style="border: 3px solid #007bff; border-radius: 8px; padding: 10px;">
+        <video controls style="width: 100%; height: 150px; object-fit: contain;">
+          <source src="./assets/samples/react/5/res_crop.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </div>
+  </div>
+</section> -->
+
+  </section>
+  
+</section>
+  
+  <!-- <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+  
+            <p>
+              This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project Page Template</a> which was adopted from the <a href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+              You are free to borrow the of this website, we just ask that you link back to this page in the footer. <br> This website is licensed under a <a rel="license"  href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+              Commons Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+  
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer> -->
+  <script>
+    // Handle message showing
+    function createChatRow(sender, text, imageSrc) {
+      var article = document.createElement("article");
+      article.className = "media"
+
+      var figure = document.createElement("figure");
+      figure.className = "media-left";
+
+      var span = document.createElement("span");
+      span.className = "icon is-large";
+
+      var icon = document.createElement("i");
+      icon.className = "fas fa-2x" + (sender === "User" ? " fa-user " : sender === "Assistant" ? " fa-robot" : sender === "VIM" ? " fa-robot" : "");
+
+      var media = document.createElement("div");
+      media.className = "media-content";
+
+      var content = document.createElement("div");
+      content.className = "content";
+
+      var para = document.createElement("p");
+
+       // Instead of pre, we'll use a simple span for inline text and ensure it inherits the styles correctly
+        var messageText = document.createElement("span");
+        messageText.style = "font-size: 18px; font-family: Arial; white-space: pre-wrap; word-wrap: break-word;";
+        var paraText = document.createTextNode(text);
+        messageText.appendChild(paraText);
+
+        var strong = document.createElement("strong");
+        strong.innerHTML = sender;
+        var br = document.createElement("br");
+
+        para.appendChild(strong);
+        para.appendChild(br);
+        para.appendChild(messageText);
+
+      // Add image if imageSrc is provided
+      if (imageSrc) {
+
+        var video = document.createElement("video");
+        video.src = imageSrc;
+        video.style = "max-width: 100%; max-height: 360px;"; // Adjust the style as needed
+        video.controls = true; // Adds play/pause controls to the video
+        video.autoplay = false; // Set to true if you want it to autoplay
+        video.loop = false; // Set to true if you want the video to loop
+        para.appendChild(video);
+      }
+
+      content.appendChild(para);
+      media.appendChild(content);
+      span.appendChild(icon);
+      figure.appendChild(span);
+      if (sender !== "Description") {
+        article.appendChild(figure);
+      };
+      article.appendChild(media);
+
+      // Apply border and background color if there's no video
+      if (!imageSrc) {
+          if (sender === "User") {
+              article.style.backgroundColor = "#f0f0f0"; // Light gray background for User when there's no video
+              article.style.border = "2px solid #ccc"; // Gray border for User
+          } else if (sender === "VIM") {
+              article.style.backgroundColor = "#d1e7fd"; // Light blue background for VIM when there's no video
+              article.style.border = "2px solid #007bff"; // Blue border for VIM
+          } else if (sender === "Assistant") {
+              article.style.backgroundColor = "#e6f7e1"; // Light green background for Assistant when there's no video
+              article.style.border = "2px solid #28a745"; // Green border for Assistant
+          }
+      } else {
+          // Only apply the border without background if there is a video
+          if (sender === "User") {
+              article.style.border = "2px solid #ccc"; // Gray border for User
+          } else if (sender === "VIM") {
+              article.style.border = "2px solid #007bff"; // Blue border for VIM
+          } else if (sender === "Assistant") {
+              article.style.border = "2px solid #28a745"; // Green border for Assistant
+          }
+      }
+      // General styles for the message box
+      article.style.padding = "10px"; // Adds some padding inside the box
+      article.style.borderRadius = "8px"; // Rounds the corners
+      article.style.marginBottom = "10px"; // Adds some margin between messages
+
+
+
+      return article;
+    }
+
+    function addMessageToChatHistory(sender, message, imageSrc) {
+      const chatHistory = document.querySelector('.chat-history');
+      const chatRow = createChatRow(sender, message, imageSrc);
+      chatHistory.appendChild(chatRow);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function clearChatHistory() {
+      const chatHistory = document.querySelector('.chat-history');
+      chatHistory.innerHTML = "";
+    }
+
+    // 
+    const conversations = [
+      {
+        "description": "editing_1",
+        "turns": [
+          ["User","Let's create a scenario where one person forcefully hits another person, like "],
+          ["User", "", "./assets/samples/data/2/1_crop.mp4"],
+          ["Assistant", "The person who got hit turns out to be very sensitive and introverted.​"],
+          ["User", "Okay, Now the person who hit is feeling sorry for hitting. How will their body motion change?"],
+          ["Assistant","", "./assets/samples/data/2/2_crop.mp4"]
+        ]
+      },
+      {
+        "description": "reasoning_1",
+        "turns": [
+          // ["Description", "Please read the description and answer the question."],
+          ["User", "Two friends meet at the airport after a long time apart. Can you show me the motion of that?"],
+          ["Assistant",
+          "", "./assets/samples/data/1/1_crop.mp4" 
+          ],
+          ["User", "What motion happened before their hug?"],
+          ["Assistant",
+          "", "./assets/samples/data/1/2_crop.mp4"
+          ],
+          ["User", "Why do they hug after waving?"],
+          ["Assistant",
+          "They have not seen each other for a long time, and waving was their first action to acknowledge each other's presence from a distance before they finally hug to express their joy and affection."
+          ],
+
+        ]
+      },
+      {
+        "description": "editing_2",
+        "turns": [
+          ["User", "Two friends are meeting and they greet each other with a friendly high-five, like "],
+          ["User", "", "./assets/samples/data/4/1_crop.mp4"],
+          ["Assistant", "Two people face each other, one person comes forward and both raise their left hands to shake hands.​"],
+          ["User", "The second person suddenly becomes very enthusiastic about the meeting. Can you generate a motion of what would happen then?"],
+          ["Assistant","", "./assets/samples/data/4/2_crop.mp4"]
+        ]
+      },
+      {
+        "description": "reasoning_2",
+        "turns": [
+          ["User", "'The current scene is"],
+          ["User", "​","./assets/samples/data/5/1_crop.mp4"],
+          ["Assistant", "It seems like these two individuals have just approached each other, possibly reconnecting after some time apart.​"],
+          ["User", "Can you tell me what might happen next in the story?'​"],
+          ["Assistant","​","./assets/samples/data/5/2_crop.mp4"],
+          ["User", "Given the current scenario, why would one pat the other's back?'​"],
+          ["Assistant","The pat on the back could indicate a friendly gesture or a sign of encouragement, possibly to show support or express camaraderie between the two individuals."]
+
+        ]
+      },
+    ];
+
+    // The current image index
+    let currentIndex = 0;
+
+    // The function to update the displayed chat history
+    function update_dialog_demo() {
+      // Clear the chat history
+      clearChatHistory();
+
+      for (let i = 0; i < conversations[currentIndex].turns.length; i++) {
+        if (conversations[currentIndex].turns[i].length == 2) {
+          addMessageToChatHistory(conversations[currentIndex].turns[i][0], conversations[currentIndex].turns[i][1]);
+        }
+        else {
+          addMessageToChatHistory(conversations[currentIndex].turns[i][0], conversations[currentIndex].turns[i][1], conversations[currentIndex].turns[i][2]);
+        }
+      }
+
+      // scroll to the top of the chat history
+      document.querySelector('.chat-history').scrollTop = 0;
+    }
+
+    // Initialize the displayed image
+    update_dialog_demo();
+
+    // Event listeners for the buttons
+    document.getElementById('prev-question').addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + conversations.length) % conversations.length;
+      update_dialog_demo();
+    });
+
+    document.getElementById('next-question').addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % conversations.length;
+      update_dialog_demo();
+    });
+
+
+    // Example data for the chat boxes
+  const chatBoxes = [
+    // Second Chat Box
+    `<article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-user fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>User</strong>
+            <p>The current scene is <span style="color:#b15b96;">[motion 1]</span>. Can you tell me what happened before?</p>
+          </div>
+          <figure class="video-container">
+            <video controls style="max-width: 100%; max-height: 240px;">
+              <source src="./assets/samples/reasoning/4/1_crop.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </figure>
+        </div>
+      </article>
+      <article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-robot fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>Assistant</strong>
+            <p> Before this scene, the first person might have just received the wristwatch as a gift from the second person. To show their appreciation, the first person extended their arm for the second person to help with adjusting the wristwatch.
+              </p>
+          </div>
+        </div>
+      </article>
+      <article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-user fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>User</strong>
+            <p>The next scene is <span style="color:#b15b96;">[motion 2]</span>. Explain the reason for this motion.</p>
+          </div>
+          <figure class="video-container">
+            <video controls style="max-width: 100%; max-height: 240px;">
+              <source src="./assets/samples/reasoning/4/2_crop.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </figure>
+        </div>
+      </article>
+      <article class="media" style="border: 1px solid #007bff; padding: 20px; border-radius: 8px; background-color: #e3f2fd;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-robot fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>VIM</strong>
+            <p> After the first person finished adjusting the wristwatch, they might acknowledge the help and show their respect to the second person. This leads to the second person acknowledging the gesture by bowing, which is a cultural sign of mutual respect in many cultures.
+              </p>
+          </div>
+        </div>
+      </article>`,
+    // First Chat Box (USER -> ASSISTANT -> USER -> VIM)
+    `<article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-user fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>User</strong>
+            <p>The current scene is <span style="color:#b15b96;">[motion 1]</span>. Can you tell me what happened before?</p>
+          </div>
+          <figure class="video-container">
+            <video controls style="max-width: 100%; max-height: 240px;">
+              <source src="./assets/samples/reasoning/2/1_crop.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </figure>
+        </div>
+      </article>
+      <article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-robot fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>Assistant</strong>
+            <p>
+              Before this scene, one person was comforting the other by gently massaging their legs. They were sitting side by side, with one person showing signs of fatigue.
+              </p>
+          </div>
+        </div>
+      </article>
+      <article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-user fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>User</strong>
+            <p>The next scene is <span style="color:#b15b96;">[motion 2]</span>. Explain the reason for this motion.</p>
+          </div>
+          <figure class="video-container">
+            <video controls style="max-width: 100%; max-height: 240px;">
+              <source src="./assets/samples/reasoning/2/2_crop.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </figure>
+        </div>
+      </article>
+      <article class="media" style="border: 1px solid #007bff; padding: 20px; border-radius: 8px; background-color: #e3f2fd;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-robot fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>VIM</strong>
+            <p>
+              After the person finished massaging the legs, they stood up to continue their workout. The second person, stood up and started massaging the first person to appreciate.
+              </p>
+          </div>
+        </div>
+      </article>`,
+    // Second Chat Box
+    `<article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-user fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>User</strong>
+            <p>The current scene is <span style="color:#b15b96;">[motion 1]</span>. Can you tell me what happened before?</p>
+          </div>
+          <figure class="video-container">
+            <video controls style="max-width: 100%; max-height: 240px;">
+              <source src="./assets/samples/reasoning/3/1_crop.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </figure>
+        </div>
+      </article>
+      <article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-robot fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>Assistant</strong>
+            <p> The two individuals were walking through the park, discussing their favorite books. They decided to sit on a bench and share a story together, with one of them reading aloud while the other listened attentively.
+              </p>
+          </div>
+        </div>
+      </article>
+      <article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-user fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>User</strong>
+            <p>The next scene is <span style="color:#b15b96;">[motion 2]</span>. Explain the reason for this motion.</p>
+          </div>
+          <figure class="video-container">
+            <video controls style="max-width: 100%; max-height: 240px;">
+              <source src="./assets/samples/reasoning/3/2_crop.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </figure>
+        </div>
+      </article>
+      <article class="media" style="border: 1px solid #007bff; padding: 20px; border-radius: 8px; background-color: #e3f2fd;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-robot fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>VIM</strong>
+            <p> After their engaging conversation, the person who was listening to the story decided to leave and offered a walk. The other person, though wanting to leave, stood up and hesitated, possibly thinking about the day or feeling weak in that situation.
+              </p>
+          </div>
+        </div>
+      </article>`,
+    // Second Chat Box
+    `<article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-user fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>User</strong>
+            <p>The current scene is <span style="color:#b15b96;">[motion 1]</span>. What do you think happened before this?'</p>
+          </div>
+          <figure class="video-container">
+            <video controls style="max-width: 100%; max-height: 240px;">
+              <source src="./assets/samples/reasoning/1/1_crop.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </figure>
+        </div>
+      </article>
+      <article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-robot fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>Assistant</strong>
+            <p> 'Before this scene, the two people were likely walking together. One of them noticed their shoelace was untied and decided to kneel down to fix it, while the other continued walking a few steps ahead.
+              </p>
+          </div>
+        </div>
+      </article>
+      <article class="media" style="border: none; padding: 10px;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-user fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>User</strong>
+            <p>The next scene is <span style="color:#b15b96;">[motion 2]</span>. Why is this happening?'</p>
+          </div>
+          <figure class="video-container">
+            <video controls style="max-width: 100%; max-height: 240px;">
+              <source src="./assets/samples/reasoning/1/2_2_crop.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </figure>
+        </div>
+      </article>
+      <article class="media" style="border: 1px solid #007bff; padding: 20px; border-radius: 8px; background-color: #e3f2fd;">
+        <figure class="media-left">
+          <span class="icon is-large">
+            <i class="fas fa-robot fa-2x"></i>
+          </span>
+        </figure>
+        <div class="media-content">
+          <div class="content">
+            <strong>VIM</strong>
+            <p> After the shoelace was tied, the person who knelt down decided to stand up. 
+              The other person, having finished tying the shoelace, turned around and waved their hand to signal that it was time to continue.
+              </p>
+          </div>
+        </div>
+      </article>`
+  ];
+
+  // Current index of the chat box
+  let currentChatIndex = 0;
+
+  // Function to update chat box content
+  function updateChatBox() {
+    const chatBox = document.getElementById('chat-box');
+    chatBox.innerHTML = chatBoxes[currentChatIndex];
+  }
+
+  // Event listeners for navigation buttons
+  document.getElementById('prev-button').addEventListener('click', function() {
+    currentChatIndex = (currentChatIndex - 1 + chatBoxes.length) % chatBoxes.length;
+    updateChatBox();
+  });
+
+  document.getElementById('next-button').addEventListener('click', function() {
+    currentChatIndex = (currentChatIndex + 1) % chatBoxes.length;
+    updateChatBox();
+  });
+
+  // Initialize the first chat box
+  updateChatBox();
+
+  const chatBoxPairs = document.querySelectorAll('.chat-box-pair');
+  const prevBtnEditing = document.getElementById('prevBtnEditing');
+  const nextBtnEditing = document.getElementById('nextBtnEditing');
+  let currentIndexEditing = 0;
+
+  function updateChatBoxesEditing() {
+    // Hide all chat box pairs
+    chatBoxPairs.forEach(pair => pair.style.display = 'none');
+
+    // Show the current chat box pair
+    chatBoxPairs[currentIndexEditing].style.display = 'flex';
+
+    // Disable Prev button if on the first chat box pair
+    prevBtnEditing.disabled = currentIndexEditing === 0;
+
+    // Disable Next button if on the last chat box pair
+    nextBtnEditing.disabled = currentIndexEditing === chatBoxPairs.length - 1;
+  }
+
+  // Initial call to set up the first chat box pair
+  updateChatBoxesEditing();
+
+  nextBtnEditing.addEventListener('click', () => {
+    if (currentIndexEditing < chatBoxPairs.length - 1) {
+      currentIndexEditing++;
+      updateChatBoxesEditing();
+    }
+  });
+
+  prevBtnEditing.addEventListener('click', () => {
+    if (currentIndexEditing > 0) {
+      currentIndexEditing--;
+      updateChatBoxesEditing();
+    }
+  });
+
+  const videoPairs = [
+      {
+        main: document.getElementById('main-video-1'),
+        small: document.getElementById('small-video-1'),
+        button: document.getElementById('playPauseBtn-1')
+      },
+      {
+        main: document.getElementById('main-video-2'),
+        small: document.getElementById('small-video-2'),
+        button: document.getElementById('playPauseBtn-2')
+      },
+      {
+        main: document.getElementById('main-video-3'),
+        small: document.getElementById('small-video-3'),
+        button: document.getElementById('playPauseBtn-3')
+      },
+      {
+        main: document.getElementById('main-video-4'),
+        small: document.getElementById('small-video-4'),
+        button: document.getElementById('playPauseBtn-4')
+      }
+    ];
+
+    // Sync function to handle time update for each video pair
+    function syncVideoPair(mainVideo, smallVideo) {
+      if (Math.abs(mainVideo.currentTime - smallVideo.currentTime) > 0.05) {
+        smallVideo.currentTime = mainVideo.currentTime;
+      }
+    }
+
+    // Toggle play/pause functionality for each video pair
+    videoPairs.forEach((videoPair) => {
+      let isPlaying = false;
+
+      // Play both videos in sync
+      function playVideos() {
+        videoPair.main.play();
+        videoPair.small.currentTime = videoPair.main.currentTime;
+        videoPair.small.play();
+        isPlaying = true;
+        videoPair.button.textContent = 'Pause';
+      }
+
+      // Pause both videos
+      function pauseVideos() {
+        videoPair.main.pause();
+        videoPair.small.pause();
+        isPlaying = false;
+        videoPair.button.textContent = 'Play';
+      }
+
+      // Button click event to toggle between play and pause
+      videoPair.button.addEventListener('click', function() {
+        if (isPlaying) {
+          pauseVideos();
+        } else {
+          playVideos();
+        }
+      });
+
+      // Keep both videos in sync during playback
+      videoPair.main.addEventListener('timeupdate', function() {
+        syncVideoPair(videoPair.main, videoPair.small);
+      });
+    });
+  
+  </script>
+
+</body>
+
+</html>
